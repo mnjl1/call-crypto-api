@@ -1,40 +1,44 @@
-from gettext import find
+
 import requests
 
-binance_url = 'https://www.binance.com/bapi/asset/v1/public/asset-service/product/currency'
-kraken_url = ''
+from .url_constants import BINANCE_URL, KRAKEN_URL
 
-
-def get_exchange_data(pair, exchange):
-    if pair is None and exchange is None:
-        pass
-    elif pair is None:
-        prices = call_echange_api(exchange)
-        return prices.json()
-    else:
-        pair_price = find_pair(pair, prices)
-        return pair_price
 
 def get_all_prices():
-    binance_data = call_echange_api(binance_url)
+    binance_data = call_binance_echange_api(BINANCE_URL)
+    kraken_data = None
     prices = []
     for price in binance_data.json()['data']:
-        prices.append({price['pair']: price['rate']})
+        prices.append({price['pair']:{ 'binance': price['rate']}})
+    
     return prices
 
 
-def call_echange_api(url):
+def get_specific_echange_api(exchange_url):
     try:
-        response = requests.get(url)
+        response = requests.get(exchange_url)
         if response.ok:
-            return response
+            prices = []
+            for price in response.json()['data']:
+                prices.append({price['pair']: price['rate']})
+            return prices
     except requests.exceptions.RequestException as e:
         print(e)
         return {}
 
 
-def find_pair(pair, response):
-    data = response.json()['data']
-    for t_pair in data:
-        if pair == t_pair['pair']:
-            return (pair, t_pair['rate'])
+def find_pair(pair, exchange):
+    prices = get_specific_echange_api(exchange)
+    for t_pair in prices:
+        if pair in t_pair:
+            return t_pair
+
+
+def call_binance_echange_api(exchange_url):
+    try:
+        response = requests.get(exchange_url)
+        if response.ok:
+            return response
+    except requests.exceptions.RequestException as e:
+        print(e)
+        return {}
