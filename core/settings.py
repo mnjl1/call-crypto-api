@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     # Third party
     'rest_framework',
+    'channels',
 
     # Local
     'exchangeapi'
@@ -56,6 +57,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'core.urls'
+ASGI_APPLICATION = "core.asgi.application"
 
 TEMPLATES = [
     {
